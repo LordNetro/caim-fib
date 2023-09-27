@@ -20,5 +20,3 @@ if __name__ == '__main__':
                     #    print(word)
                     if re.match("^[a-zA-Z]*'?[a-zA-Z]*$", word) and not is_roman_numeral(word):
                         outfile.write(number+', '+word + '\n')
-
-    
