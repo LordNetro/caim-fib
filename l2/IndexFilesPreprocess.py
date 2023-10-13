@@ -22,7 +22,7 @@ IndexFiles
 :Authors:
     bejar
 
-:Version: 
+:Version:
 
 :Date:  23/06/2017
 """
@@ -33,8 +33,13 @@ from elasticsearch.exceptions import NotFoundError
 import argparse
 import os
 import codecs
-from elasticsearch_dsl import Index, analyzer, tokenizer
+from elasticsearch_dsl import Index, analyzer, tokenizer, token_filter
 
+# Define filters
+length_filter = token_filter('length_filter', type='length', min=2, max=20)
+word_delimiter_filter = token_filter('word_delimiter_filter', type='word_delimiter')
+ngram_filter = token_filter('ngram_filter', type='ngram', min_gram=2, max_gram=15)
+edge_ngram_filter = token_filter('edge_ngram_filter', type='edge_ngram', min_gram=1, max_gram=15)
 
 def generate_files_list(path):
     """
@@ -60,10 +65,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', required=True, default=None, help='Path to the files')
     parser.add_argument('--index', required=True, default=None, help='Index for the files')
-    parser.add_argument('--token', default='standard', choices=['standard', 'whitespace', 'classic', 'letter'],
+    parser.add_argument('--token', default='standard', choices=['standard', 'whitespace', 'classic', 'letter', 'uax_url_email', 'thai'],
                         help='Text tokenizer')
     parser.add_argument('--filter', default=['lowercase'], nargs=argparse.REMAINDER, help='Text filter: lowercase, '
-                                                                                          'asciifolding, stop, porter_stem, kstem, snowball')
+                                                                                          'asciifolding, stop, porter_stem, kstem, snowball, english_stop, length_filter, word_delimiter_filter, ngram_filter, edge_ngram_filter')
 
     args = parser.parse_args()
 
@@ -71,10 +76,13 @@ if __name__ == '__main__':
     index = args.index
 
     # check if the filters are valid
+    valid_filters = ['lowercase', 'asciifolding', 'stop', 'stemmer', 'porter_stem', 'kstem', 'snowball', 'english_stop',
+                     'length_filter', 'word_delimiter_filter', 'ngram_filter', 'edge_ngram_filter']
+
     for f in args.filter:
-        if f not in ['lowercase', 'asciifolding', 'stop', 'stemmer', 'porter_stem', 'kstem', 'snowball']:
-            raise NameError(
-                'Invalid filter must be a subset of: lowercase, asciifolding, stop, porter_stem, kstem, snowball')
+        if f not in valid_filters:
+            raise NameError(f'Invalid filter. Must be a subset of: {", ".join(valid_filters)}')
+
 
     ldocs = []
 
@@ -92,11 +100,30 @@ if __name__ == '__main__':
 
     client = Elasticsearch(timeout=1000)
 
+    # List of all available filters
+    all_filters = {
+        'lowercase': 'lowercase',
+        'asciifolding': 'asciifolding',
+        'stop': 'stop',
+        'stemmer': 'stemmer',
+        'porter_stem': 'porter_stem',
+        'kstem': 'kstem',
+        'snowball': 'snowball',
+        'english_stop': 'english_stop',
+        'length_filter': length_filter,
+        'word_delimiter_filter': word_delimiter_filter,
+        'ngram_filter': ngram_filter,
+        'edge_ngram_filter': edge_ngram_filter
+    }
+
+    # Extract the filters based on args.filter
+    active_filters = [all_filters[f] for f in args.filter]
+
     # Tokenizers: whitespace classic standard letter
     my_analyzer = analyzer('default',
                            type='custom',
                            tokenizer=tokenizer(args.token),
-                           filter=args.filter
+                           filter=active_filters
                            )
 
     try:
@@ -115,7 +142,7 @@ if __name__ == '__main__':
     ind.analyzer(my_analyzer)
 
     # configure the path field so it is not tokenized and we can do exact match search
-    client.indices.put_mapping(doc_type='document', index=index, include_type_name=True, body={
+    client.indices.put_mapping(index=index, body={
         "properties": {
             "path": {
                 "type": "keyword",
