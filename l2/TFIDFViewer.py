@@ -90,8 +90,11 @@ def toTFIDF(client, index, file_id):
     tfidfw = []
     for (t, w),(_, df) in zip(file_tv, file_df):
         #
-        # Something happens here
+        # OUR CODE
         #
+        tf = w / max_freq
+        idf = np.log2(dcount / df)
+        tfidfw.append((t, tf * idf))
         pass
 
     return normalize(tfidfw)
@@ -105,6 +108,8 @@ def print_term_weigth_vector(twv):
     #
     # Program something here
     #
+    for (t, w) in twv:
+        print ('term:', t, 'weight:', w )
     pass
 
 
@@ -118,7 +123,14 @@ def normalize(tw):
     #
     # Program something here
     #
-    return None
+    normalizedWeights = [w for _, w in tw]
+    # we divide the weights by the vector module to normalize it
+    module = 0
+    for w in normalizedWeights:
+        module += np.square(w)
+    module = np.sqrt(module)
+    normalizedWeights = np.divide(normalizedWeights, module)
+    return list(zip([t for t, _ in tw], normalizedWeights))
 
 
 def cosine_similarity(tw1, tw2):
@@ -128,10 +140,26 @@ def cosine_similarity(tw1, tw2):
     :param tw2:
     :return:
     """
-    #
-    # Program something here
-    #
-    return 0
+    i_tw1 = 0
+    i_tw2 = 0
+    cosine_sim = 0
+
+    #cosine_similarity(A,B)= A⋅B / ∥A∥∥B∥
+
+    while i_tw1 < len(tw1) and i_tw2 < len(tw2):
+        (t1,w1) = tw1[i_tw1]
+        (t2,w2) = tw2[i_tw2]
+        if t1 == t2:
+            cosine_sim += w1 * w2
+            i_tw1 += 1
+            i_tw2 += 1
+        elif t1 > t2:
+            i_tw2 += 1
+        else:
+            i_tw1 += 1
+
+    return cosine_sim
+
 
 def doc_count(client, index):
     """
