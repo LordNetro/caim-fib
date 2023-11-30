@@ -92,7 +92,7 @@ if __name__ == '__main__':
     ind.close()  # index must be closed for configuring analyzer
 
     # configure the path field so it is not tokenized and we can do exact match search
-    client.indices.put_mapping(doc_type='document', index=index, include_type_name=True, body= {
+    client.indices.put_mapping(index=index, body= {
             "properties": {
                 "path": {
                     "type": "keyword",
