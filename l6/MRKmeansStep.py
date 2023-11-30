@@ -35,12 +35,14 @@ class MRKmeansStep(MRJob):
 
         The result should be always a value in the range [0,1]
         """
-        it1, it2, sumFreqInters = 0
+        it1 = 0
+        it2 = 0
+        sumFreqInters = 0
 
         while it1 < len(doc) and it2 < len(prot):
             if doc[it1] < prot[it2][0]:
                 it1 += 1
-            elif docit1 > prot[it2][0]:
+            elif doc[it1] > prot[it2][0]:
                 it2 += 1
             else:
                 sumFreqInters += prot[it2][1]
@@ -104,8 +106,8 @@ class MRKmeansStep(MRJob):
                 best_prototype = prototype_id
 
         # Emit the best prototype with highest similarity and the words
-        if best_prototype is not None:
-            yield best_prototype, (docid, lwords)
+        yield best_prototype, (docid, lwords)
+
 
     def aggregate_prototype(self, key, values):
         """
@@ -134,16 +136,20 @@ class MRKmeansStep(MRJob):
             total_docs += 1
             doc_list.append(doc_id)
             for word in words:
-                word_freq[word] += 1
-        
+                if word in word_freq:
+                    word_freq[word] += 1
+                else:
+                    word_freq[word] = 1
+                
         # Calculate the new prototype
         new_prototype = []
         for word, freq in word_freq.items():
-            new_prototype.append((word, freq / total_docs))
+            new_prototype.append((word, float(freq) / float(total_docs)))
         
         # Sort by alphabetical order before yielding
-        yield key, (sorted(doc_list), new_prototype.sort(key=lambda x: x[0]))
+        yield key, (sorted(doc_list), sorted(new_prototype, key=lambda x: x[0]))
 
+    
     def steps(self):
         return [MRStep(mapper_init=self.load_data, mapper=self.assign_prototype,
                        reducer=self.aggregate_prototype)
