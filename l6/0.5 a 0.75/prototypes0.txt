@@ -1,0 +1,10 @@
+CLASS0:can+1.0 our+1.0 result+1.0 show+1.0 use+1.0 
+CLASS1:from+1.0 our+1.0 use+1.0 
+CLASS2:from+1.0 result+1.0 show+1.0 which+1.0 
+CLASS3:can+1.0 from+1.0 
+CLASS4:from+1.0 result+1.0 
+CLASS5:from+1.0 model+1.0 our+1.0 result+1.0 use+1.0 which+1.0 
+CLASS6:our+1.0 result+1.0 which+1.0 
+CLASS7:from+1.0 model+1.0 our+1.0 result+1.0 use+1.0 which+1.0 
+CLASS8:can+1.0 from+1.0 model+1.0 our+1.0 result+1.0 use+1.0 which+1.0 
+CLASS9:can+1.0 from+1.0 model+1.0 which+1.0 
