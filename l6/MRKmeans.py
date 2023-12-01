@@ -65,15 +65,9 @@ if __name__ == '__main__':
                 new_proto[key] = value[1]
 
             # If your scripts returns the new assignments you could write them in a file here
-
-
-            docsList = ""
-            for key, docs in new_assign.items():
-                docsList += key + ": "
-                for doc in docs:
-                    docsList += doc + " "
-                for i in range(10):
-                    docsList += "\n"
+            
+            if assign == new_assign:
+                nomove = True
 
             strProto = ""
             for key,values in new_proto.items():
@@ -82,23 +76,18 @@ if __name__ == '__main__':
                     strProto += value[0] + "+" + str(value[1]) + " "
                 strProto += "\n"
 
-            assigName = "/assigns%d.txt"%(i+1)
             prototipeName = "/prototypes%d.txt" %(i+1)
             if (i+1 == args.iter or nomove):
                 assigName = "/assigns-final.txt"
                 prototipeName = "/prototypes-final.txt"
 
-            outputAssigns = open(cwd + assigName, 'w')
-            outputAssigns.write(docsList)
-            outputAssigns.close()
             outputPrototipes = open(cwd + prototipeName, 'w')
             outputPrototipes.write(strProto)
             outputPrototipes.close()
 
             # You should store the new prototypes here for the next iteration
             # If you have saved the assignments, you can check if they have changed from the previous iteration
-            if assign == new_assign:
-                nomove = True
+
             assign = new_assign
 
         print(f"Time= {(time.time() - tinit)} seconds")
